@@ -1,38 +1,34 @@
+import ballerinax/trigger.asgardeo;
 import ballerina/log;
-import wso2/choreo.sendemail;
-import ballerinax/trigger.github;
 import ballerina/http;
-configurable string toEmail = ?;
-configurable github:ListenerConfig config = ?;
-listener http:Listener httpListener = new (8090);
-listener github:Listener webhookListener = new (config, httpListener);
-service github:IssuesService on webhookListener {
-    remote function onOpened(github:IssuesEvent payload) returns error? {
-        //Not Implemented
+
+configurable asgardeo:ListenerConfig config = ?;
+
+listener http:Listener httpListener = new(8090);
+listener asgardeo:Listener webhookListener =  new(config,httpListener);
+
+service asgardeo:RegistrationService on webhookListener {
+
+    remote function onAddUser(asgardeo:AddUserEvent event ) returns error? {
+        
+        log:printInfo(event.toJsonString());
+        log:printInfo(event.eventData.organizationName());
+        log:printInfo("User has been added");
     }
-    remote function onClosed(github:IssuesEvent payload) returns error? {
-        //Not Implemented
+    
+    remote function onConfirmSelfSignup(asgardeo:GenericEvent event ) returns error? {
+        
+        log:printInfo(event.toJsonString());
+        log:printInfo(event.eventData.organizationName());
+        log:printInfo("Self sign up confirmed");
     }
-    remote function onReopened(github:IssuesEvent payload) returns error? {
-        //Not Implemented
-    }
-    remote function onAssigned(github:IssuesEvent payload) returns error? {
-        //Not Implemented
-    }
-    remote function onUnassigned(github:IssuesEvent payload) returns error? {
-        //Not Implemented
-    }
-    remote function onLabeled(github:IssuesEvent payload) returns error? {
-        //Not Implemented
-        github:Label? label = payload.label;
-        if label is github:Label && label.name == "bug" {
-            sendemail:Client sendemailEp = check new ();
-            string sendEmailResponse = check sendemailEp->sendEmail(toEmail, subject = "Bug reported: " + payload.issue.title, body = "A bug has been reported. Please check " + payload.issue.html_url);
-            log:printInfo("Email sent " + sendEmailResponse);
-        } else {
-        }
-    }
-    remote function onUnlabeled(github:IssuesEvent payload) returns error? {
-        //Not Implemented
+    
+    remote function onAcceptUserInvite(asgardeo:GenericEvent event ) returns error? {
+        
+        log:printInfo(event.toJsonString());
+        log:printInfo(event.eventData.organizationName());
+        log:printInfo("User Invite accepted");
     }
 }
+
+service /ignore on httpListener {}
